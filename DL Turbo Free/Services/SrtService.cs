@@ -15,7 +15,7 @@ namespace DL_Turbo_Free.Services
         [GeneratedRegex(@"(\d{2}:\d{2}:\d{2}[,\.]\d{3})")]
         private static partial Regex RxTiming();
 
-        [GeneratedRegex(@"\[(?<actor>.*?)\]|\((?<actor>.*?)\)")]
+        [GeneratedRegex(@"\[(?<actor>.*?)\]|\((?<actor>.*?)\)|(?<actor>[^\s]+)[\\/+\)]")]
         private static partial Regex RxBracketActor();
 
         [GeneratedRegex(@"^(?<actor>.+?):\s+(?<text>.*)$")]

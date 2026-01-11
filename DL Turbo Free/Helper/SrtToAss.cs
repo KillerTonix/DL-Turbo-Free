@@ -14,9 +14,10 @@ namespace DL_Turbo_Free.Helper
             string assHeader = GenerateAssHeader(Path.GetFileName(outputPath));
             foreach (var line in lines)
             {
-                assLine.AppendLine(string.Format("Dialogue: 0,{0},{1},Default,,0,0,0,,{2}",
+                assLine.AppendLine(string.Format("Dialogue: 0,{0},{1},Default,{2},0,0,0,,{3}",
                     FormatTimeForAss(line.StartTime),
                     FormatTimeForAss(line.EndTime),
+                    string.IsNullOrEmpty(line.Actor) ? "N/A" : line.Actor,
                     EscapeAssText(line.Text)));
             }
             
