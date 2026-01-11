@@ -1,7 +1,6 @@
 ﻿using DL_Turbo_Free.Contexts;
 using DL_Turbo_Free.Models;
 using System.IO;
-using System.Reflection.Metadata.Ecma335;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.RegularExpressions;
@@ -16,8 +15,11 @@ namespace DL_Turbo_Free.Services
         [GeneratedRegex(@"(\d{2}:\d{2}:\d{2}[,\.]\d{3})")]
         private static partial Regex RxTiming();
 
-        [GeneratedRegex(@"\[(?<actor>.*?)\]|\((?<actor>.*?)\)|(?<actor>[^\s]+)[\\/+\)]")]
-        private static partial Regex RxActor();
+        [GeneratedRegex(@"\[(?<actor>.*?)\]|\((?<actor>.*?)\)")]
+        private static partial Regex RxBracketActor();
+
+        [GeneratedRegex(@"^(?<actor>.+?):\s+(?<text>.*)$")]
+        private static partial Regex RxColonActor();
 
         /// <summary>
         /// Parses SRT file and returns raw UTF-8 JSON bytes (ideal for memory storage/transmission).
@@ -30,7 +32,7 @@ namespace DL_Turbo_Free.Services
 
             // Standardize newlines
             // In .NET 10, string manipulation is heavily optimized
-            var blocks = fileContent.Replace("\r\n", "\n").Split("\n\n");
+            var blocks = Regex.Split(fileContent.Replace("\r\n", "\n"), @"\n\s*\n");
 
             int globalIdCounter = 1;
 
@@ -50,46 +52,47 @@ namespace DL_Turbo_Free.Services
 
                 // Extract text lines (skipping ID and Timestamp)
                 // leveraging modern LINQ optimization
-                var textLines = lines.Where(l =>
-                    !RxTiming().IsMatch(l) &&
-                    !int.TryParse(l, out _)
-                );
+                var textOnlyLines = lines.Where(l => !RxTiming().IsMatch(l) && !int.TryParse(l, out _)).ToList();
 
-                string rawText = string.Join(" ", textLines);
-                string cleanText = RxActor().Replace(rawText, "").Trim();
-                if (cleanText.StartsWith(':')) cleanText = cleanText[1..].Trim();
 
-                var actorMatches = RxActor().Matches(rawText);
-
-                if (actorMatches.Count > 0)
+                foreach (var line in textOnlyLines)
                 {
-                    foreach (Match match in actorMatches)
+                    if (string.IsNullOrWhiteSpace(line)) continue;
+
+                    string currentActor = "Undefined"; // Default
+                    string currentText = line.Trim();
+
+                    // CHECK STRATEGY A: "Name: Text"
+                    var colonMatch = RxColonActor().Match(line);
+                    if (colonMatch.Success)
                     {
-                        // MAGIC HERE: We use the named group "actor"
-                        // This automatically picks the correct name whether it was [Name] or Name/
-                        string extractedActor = match.Groups["actor"].Value;
-
-                        rawLines.Add(new SubtitleItem(
-                            globalIdCounter++,
-                            start,
-                            end,
-                            extractedActor,
-                            cleanText
-                        ));
+                        currentActor = CleanActorName(colonMatch.Groups["actor"].Value.Trim());
+                        currentText = colonMatch.Groups["text"].Value.Trim();
                     }
-                }
-                else
-                {
-                    // No actor found
+                    // CHECK STRATEGY B: "[Name] Text" (Fallback)
+                    else
+                    {
+                        var bracketMatch = RxBracketActor().Match(line);
+                        if (bracketMatch.Success)
+                        {
+                            currentActor = CleanActorName(bracketMatch.Groups["actor"].Value.Trim());
+                            // Remove the [Name] tag from text
+                            currentText = RxBracketActor().Replace(line, "").Trim();
+                        }
+                    }
+
+                    // Add the item
+                    // Note: We create a NEW item for every line found in the block
                     rawLines.Add(new SubtitleItem(
                         globalIdCounter++,
                         start,
                         end,
-                        "Undefined",
-                        cleanText
+                        currentActor,
+                        currentText
                     ));
                 }
             }
+
 
             // SERIALIZATION
             var options = new JsonSerializerOptions
@@ -104,6 +107,58 @@ namespace DL_Turbo_Free.Services
 
             // 3. Serialize using the configured context
             return JsonSerializer.SerializeToUtf8Bytes(rawLines, context.ListSubtitleItem);
+        }
+
+
+        // Helper to strip special characters from Actor names
+        // Removes: [ ] ( ) / \ + and trims spaces
+        private static string CleanActorName(string rawName)
+        {
+            if (string.IsNullOrWhiteSpace(rawName)) return "Undefined";
+
+            // Replace known delimiters with empty strings
+            // You can add more symbols here if needed
+            var cleaned = rawName
+                .Replace("[", "")
+                .Replace("]", "")
+                .Replace("(", "")
+                .Replace(")", "")
+                .Replace("/", "")
+                .Replace("\\", "") // Backslash
+                .Replace("+", "")
+                .Trim();
+
+            return string.IsNullOrWhiteSpace(cleaned) ? "Undefined" : cleaned;
+        }
+
+        public static List<SubtitleItem> FillMissingActors(List<SubtitleItem> items)
+        {
+            var processedList = new List<SubtitleItem>();
+
+            // Default fallback if the very first line is undefined
+            string lastKnownActor = "Unknown";
+
+            foreach (var item in items)
+            {
+                // Check if current actor is "Undefined" (or "0_0" from our previous fallback)
+                bool isUndefined = string.Equals(item.Actor, "Undefined", StringComparison.OrdinalIgnoreCase)
+                                || string.Equals(item.Actor, "0_0", StringComparison.OrdinalIgnoreCase);
+
+                if (isUndefined)
+                {
+                    // Create a COPY of the item, but replace the Actor with the last known one
+                    var fixedItem = item with { Actor = lastKnownActor };
+                    processedList.Add(fixedItem);
+                }
+                else
+                {
+                    // Found a real actor! Update our memory and keep the item as is.
+                    lastKnownActor = item.Actor;
+                    processedList.Add(item);
+                }
+            }
+
+            return processedList;
         }
     }
 }

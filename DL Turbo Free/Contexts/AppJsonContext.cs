@@ -3,10 +3,11 @@ using System.Text.Json.Serialization;
 
 namespace DL_Turbo_Free.Contexts
 {
-    // This instructs the compiler to generate the JSON serialization code 
-    // for List<SubtitleItem> right now, instead of figuring it out at runtime.
+    [JsonSourceGenerationOptions(
+    WriteIndented = true,
+    PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
+    PropertyNameCaseInsensitive = true)] // <--- ADD THIS
     [JsonSerializable(typeof(List<SubtitleItem>))]
-    [JsonSourceGenerationOptions(WriteIndented = true, PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase)]
     public partial class AppJsonContext : JsonSerializerContext
     {
     }

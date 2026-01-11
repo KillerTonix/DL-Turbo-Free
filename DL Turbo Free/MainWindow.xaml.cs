@@ -1,6 +1,11 @@
-﻿using DL_Turbo_Free.Helper;
+﻿using DL_Turbo_Free.Contexts;
+using DL_Turbo_Free.Helper;
+using DL_Turbo_Free.Models;
+using DL_Turbo_Free.Services;
 using Microsoft.Win32;
+using System.Diagnostics;
 using System.IO;
+using System.Text.Json;
 using System.Windows;
 using System.Windows.Input;
 
@@ -17,6 +22,8 @@ namespace DL_Turbo_Free
         public MainWindow()
         {
             InitializeComponent();
+            ConvertingSettingsStackPanel.Visibility = Visibility.Hidden;
+            FileOpenOrDragAndDropBorder.Visibility = Visibility.Visible;
         }
 
         private void FileOpenOrDragAndDropBorder_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -32,10 +39,9 @@ namespace DL_Turbo_Free
                 if (openFileDialog.ShowDialog() == true)
                 {
                     string file = openFileDialog.FileName;
-
+                    FileOpenOrDragAndDropBorder.Visibility = Visibility.Hidden;
                     DoUIChanges(file); //do ui changes
                 }
-
             }
         }
 
@@ -54,7 +60,6 @@ namespace DL_Turbo_Free
                 }
                 FileOpenOrDragAndDropBorder.Visibility = Visibility.Hidden;
                 DoUIChanges(files[0]); //do ui changes
-
             }
         }
 
@@ -71,48 +76,99 @@ namespace DL_Turbo_Free
 
         private void DoUIChanges(string file)
         {
+
             FilePathTextBox.Text = file;
             if (CheckFileType.GetFileType(file) == "srt")
             {
                 InputFileFormat = "srt";
                 XtoYRadioButton.Content = "SRT to ASS";
                 XtoDocxRadioButton.Content = "SRT to DOCX";
-                SrtSettingsStackPanel.Visibility = Visibility.Visible;
-
+                SrtSettingsStackPanel.Visibility = Visibility.Hidden;
+                SetSeparatorBtn.Visibility = Visibility.Hidden;
 
                 ParsedSubtitle = ParseSubtitle.ParseSrt(file);
                 string jsonString = System.Text.Encoding.UTF8.GetString(ParsedSubtitle);
-
                 File.WriteAllText("debug_parsed_srt.json", jsonString);
 
-                //MessageBox.Show($"Success! Json Size: {jsonString.Length} bytes.\n\nPreview:\n" + jsonString[..200] + "...");
             }
             else if (CheckFileType.GetFileType(file) == "ass")
             {
                 InputFileFormat = "ass";
                 XtoYRadioButton.Content = "ASS to SRT";
                 XtoDocxRadioButton.Content = "ASS to DOCX";
-                SrtSettingsStackPanel.Visibility = Visibility.Hidden;
-
+                SrtSettingsStackPanel.Visibility = Visibility.Visible;
+                SetSeparatorBtn.Visibility = Visibility.Visible;
 
                 //ParsedSubtitle = ParseSubtitle.ParseSrt(file);
             }
+
+            ConvertingSettingsStackPanel.Visibility = Visibility.Visible;
         }
 
         private void ConvertButton_Click(object sender, RoutedEventArgs e)
         {
-            OpenFileDialog openFileDialog = new()
-            {
-                Filter = "Subtitle files (*.ass;*.srt)| *.ass; *.srt",
-                Multiselect = false,
-            };
+            string folder = Path.GetDirectoryName(FilePathTextBox.Text) ?? string.Empty;
+            string filename = Path.GetFileNameWithoutExtension(FilePathTextBox.Text);
+            string outputPath = string.Empty;
 
-            if (openFileDialog.ShowDialog() == true)
+            if (XtoDocxRadioButton.IsChecked == true)
             {
-                string file = openFileDialog.FileName;
-                DoUIChanges(file); //do ui changes
+                try
+                {
+                    List<SubtitleItem>? rawData = JsonSerializer.Deserialize(ParsedSubtitle, AppJsonContext.Default.ListSubtitleItem);
+                    if (rawData == null || rawData.Count == 0)
+                    {
+                        MessageBox.Show("Error: No subtitles found in file.");
+                        return;
+                    }
+                    var correctedData = SrtService.FillMissingActors(rawData);
+                    var merger = new ScriptMerger();
+                    var mergedLines = merger.MergeScript(correctedData);
+                    var generator = new DocxService();
+
+                    outputPath = Path.Combine(folder, $"{filename}.docx");
+                    generator.GenerateDocx(FilePathTextBox.Text, mergedLines);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Error: " + ex.Message);
+                }
+            }
+            else
+            {
+                MessageBox.Show("Only 'X to DOCX' conversion is supported in this version.", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+
+            SuccessMessageBox(folder, outputPath); //show success message box
+
+
+
+        }
+
+
+        private void SuccessMessageBox(string folder, string outputPath)
+        {
+            if (OpenTheFolderAfterConvertionChkBox.IsChecked == true)
+                OpenTheFolderAfterConvertion(outputPath);
+            else
+            {
+                if (MessageBox.Show("Conversion completed successfully!\nDo you want to open the output folder?", "Success", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+                    if (Directory.Exists(folder))
+                        OpenTheFolderAfterConvertion(outputPath);
+                    else
+                        MessageBox.Show("Output folder not found.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+
+        private void OpenTheFolderAfterConvertion(string outputPath)
+        {
+            Process.Start(new ProcessStartInfo { FileName = "explorer", Arguments = $"/n, /select,{outputPath}" });
+            if (CloseTheAppAfterConvertionChkBox.IsChecked == true)
+                Application.Current.Shutdown();
+        }
+
 
         private void XtoDocxRadioButton_Checked(object sender, RoutedEventArgs e)
         {
@@ -129,7 +185,34 @@ namespace DL_Turbo_Free
         private void SetSeparatorBtn_Click(object sender, RoutedEventArgs e)
         {
             SetSeparatorWindow separatorWindow = new();
-            separatorWindow.ShowDialog();           
+            separatorWindow.ShowDialog();
+        }
+
+        private void BrowseButton_Click(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog openFileDialog = new()
+            {
+                Filter = "Subtitle files (*.ass;*.srt)| *.ass; *.srt",
+                Multiselect = false,
+            };
+
+            if (openFileDialog.ShowDialog() == true)
+            {
+                string file = openFileDialog.FileName;
+                DoUIChanges(file); //do ui changes
+            }
+        }
+
+        private void SrtSettingsStackPanel_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            if (SrtSettingsStackPanel.Visibility == Visibility.Hidden)
+            {
+                SetSeparatorBtn.Visibility = Visibility.Hidden;
+            }
+            else
+            {
+                SetSeparatorBtn.Visibility = Visibility.Visible;
+            }
         }
     }
 }
