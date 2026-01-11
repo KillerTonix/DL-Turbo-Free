@@ -37,7 +37,7 @@ namespace DL_Turbo_Free.Services
 
                 // Remove "Dialogue: " prefix to make splitting easier
                 // "0,0:00:02.39,..."
-                string content = cleanLine.Substring(9).Trim();
+                string content = cleanLine[9..].Trim();
 
                 // CRITICAL: We split by comma, BUT we limit to 10 parts.
                 // This ensures that if the TEXT contains commas, they are not split.
@@ -78,17 +78,18 @@ namespace DL_Turbo_Free.Services
             }
 
             // Serialize to JSON (Compatible with your Merger and Docx generator)
-            var options = new JsonSerializerOptions
+            JsonSerializerOptions jsonSerializerOptions = new()
             {
                 WriteIndented = true,
                 Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
             };
+            JsonSerializerOptions options = jsonSerializerOptions;
 
             return JsonSerializer.SerializeToUtf8Bytes(rawLines, options);
         }
 
         // Helper to turn "0:00:02.39" into "00:00:02.390"
-        private string NormalizeAssTime(string assTime)
+        private static string NormalizeAssTime(string assTime)
         {
             // Add leading zero to hour if needed
             var parts = assTime.Split(':');

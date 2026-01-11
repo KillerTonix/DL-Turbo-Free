@@ -6,7 +6,7 @@ namespace DL_Turbo_Free.Helper
 {
     internal class AssToSrt
     {
-        public static void ConvertAssToSrt(string outputPath, List<ScriptLine> lines, bool isActorInSeparateFiles)
+        public static void ConvertAssToSrt(string outputPath, List<SubtitleItem> lines, bool isActorInSeparateFiles)
         {
 
             if (isActorInSeparateFiles)
@@ -21,7 +21,7 @@ namespace DL_Turbo_Free.Helper
                     for (int i = 0; i < actorLines.Count; i++)
                     {
                         srtLine.AppendLine($"{i + 1}");
-                        srtLine.AppendLine($"{actorLines[i].RawStartTime:hh\\:mm\\:ss\\,fff} --> {actorLines[i].RawEndTime:hh\\:mm\\:ss\\,fff}");
+                        srtLine.AppendLine($"{FormatTimeForSrt(actorLines[i].StartTime)} --> {FormatTimeForSrt(actorLines[i].EndTime)}");
                         srtLine.AppendLine($"{actorLines[i].Text}");
                         srtLine.AppendLine("");
                     }
@@ -35,7 +35,7 @@ namespace DL_Turbo_Free.Helper
                 for (int i = 0; i < lines.Count; i++)
                 {
                     srtLine.AppendLine($"{i + 1}");
-                    srtLine.AppendLine($"{lines[i].RawStartTime:hh\\:mm\\:ss\\,fff} --> {lines[i].RawEndTime:hh\\:mm\\:ss\\,fff}");
+                    srtLine.AppendLine($"{FormatTimeForSrt(lines[i].StartTime)} --> {FormatTimeForSrt(lines[i].EndTime)}");
                     srtLine.AppendLine($"{DefinedActorSeparator(lines[i].Actor)} {lines[i].Text}");
                     srtLine.AppendLine("");
                 }
@@ -49,6 +49,13 @@ namespace DL_Turbo_Free.Helper
             if (string.IsNullOrWhiteSpace(actor))
                 return string.Empty;
             return separator.Replace("actor", actor);
+        }
+
+        private static string FormatTimeForSrt(string time)
+        {
+            if (!TimeSpan.TryParse(time, out TimeSpan timeSpan))
+                return "00:00:00,000";
+            return string.Format("{0:D2}:{1:D2}:{2:D2},{3:D3}", (int)timeSpan.TotalHours, timeSpan.Minutes, timeSpan.Seconds, timeSpan.Milliseconds);
         }
     }
 }

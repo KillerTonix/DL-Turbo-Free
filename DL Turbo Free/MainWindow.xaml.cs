@@ -146,13 +146,18 @@ namespace DL_Turbo_Free
                     }
 
                     var correctedData = SrtService.FillMissingActors(rawData);
-                    var merger = new ScriptMerger();
-                    var mergedLines = merger.MergeScript(correctedData);
                     var generator = new DocxService();
-
-                    outputPath = Path.Combine(folder, $"{filename}.srt");
-                    bool separateFiles = CharactersInSeparateFilesRadioButton.IsChecked ?? false;
-                    AssToSrt.ConvertAssToSrt(outputPath, mergedLines, separateFiles);
+                    if (InputFileFormat == "srt")
+                    {
+                        outputPath = Path.Combine(folder, $"{filename}.ass");
+                        SrtToAss.ConvertSrtToAss(outputPath, correctedData);
+                    }
+                    else if (InputFileFormat == "ass")
+                    {
+                        outputPath = Path.Combine(folder, $"{filename}.srt");
+                        bool separateFiles = CharactersInSeparateFilesRadioButton.IsChecked ?? false;
+                        AssToSrt.ConvertAssToSrt(outputPath, correctedData, separateFiles);
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -234,6 +239,12 @@ namespace DL_Turbo_Free
             {
                 SetSeparatorBtn.Visibility = Visibility.Visible;
             }
+        }
+
+        private void AboutButton_Click(object sender, RoutedEventArgs e)
+        {
+            AboutWindow about = new();
+            about.ShowDialog();
         }
     }
 }
