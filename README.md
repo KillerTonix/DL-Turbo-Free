@@ -43,5 +43,6 @@ A high-performance WPF application built with **.NET 10** that converts subtitle
     * **To Separate Srt:** Creates a folder with individual subtitle files for every actor found.
 
 ## 📄 License
-
 Distributed under the MIT License. See `LICENSE` for more information.
+
+![DL Turbo Free](https://github.com/user-attachments/assets/09b9c8c2-04f6-41fe-91d1-70014e3ba73c)
