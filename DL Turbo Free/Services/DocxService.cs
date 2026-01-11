@@ -7,16 +7,15 @@ namespace DL_Turbo_Free.Services
 {
     public class DocxService
     {
-        private readonly Border _blankBorder = new Border(BorderStyle.Tcbs_none, 0, 0f, Xceed.Drawing.Color.White);
-        private readonly Border _grayBorder = new Border(BorderStyle.Tcbs_single, BorderSize.two, 0f, Xceed.Drawing.Color.LightGray);
+        private readonly Border _blankBorder = new(BorderStyle.Tcbs_none, 0, 0f, Xceed.Drawing.Color.White);
+        private readonly Border _grayBorder = new(BorderStyle.Tcbs_single, BorderSize.two, 0f, Xceed.Drawing.Color.LightGray);
         private readonly string AppPath = AppDomain.CurrentDomain.BaseDirectory;
 
-        public void GenerateDocx(string inputPath, List<ScriptLine> lines)
+        public void GenerateDocx(string outputPath, List<ScriptLine> lines)
         {
+            string filename = Path.GetFileNameWithoutExtension(outputPath);
             // 1. Setup Paths
-            string folder = Path.GetDirectoryName(inputPath) ?? string.Empty;
-            string filename = Path.GetFileNameWithoutExtension(inputPath);
-            string outputPath = Path.Combine(folder, $"{filename}.docx");
+           
 
             // 2. Load Template
             string templatePath = Path.Combine(AppPath, "blank_pattern.docx");
@@ -56,7 +55,7 @@ namespace DL_Turbo_Free.Services
                 table.Rows[i].Cells[0].Paragraphs.First()
                     .Append(line.Timestamp).Font("Arial").FontSize(12);
 
-                FormatBorders(table.Rows[i].Cells[0], Alignment.left, true);
+                FormatBorders(table.Rows[i].Cells[0], Alignment.left);
 
                 // Col 1: Actor (With Highlight Logic)
                 var pActor = table.Rows[i].Cells[1].Paragraphs.First();
@@ -66,13 +65,13 @@ namespace DL_Turbo_Free.Services
 
 
 
-                FormatBorders(table.Rows[i].Cells[1], Alignment.right, true);
+                FormatBorders(table.Rows[i].Cells[1], Alignment.right);
 
                 // Col 2: Text (Normal text)
                 table.Rows[i].Cells[2].Paragraphs.First()
                     .Append(line.Text).Font("Arial").FontSize(12);
 
-                FormatBorders(table.Rows[i].Cells[2], Alignment.left, true);
+                FormatBorders(table.Rows[i].Cells[2], Alignment.left);
             }
 
             doc.InsertTable(table);
@@ -90,7 +89,7 @@ namespace DL_Turbo_Free.Services
         // --- HELPER METHODS ---              
 
 
-        private void FormatBorders(Cell c, Alignment align, bool showSideBorders)
+        private void FormatBorders(Cell c, Alignment align)
         {
             // Apply alignment to the text
             c.Paragraphs.First().Alignment = align;

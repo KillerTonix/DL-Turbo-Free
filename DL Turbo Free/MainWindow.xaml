@@ -59,8 +59,7 @@
 
                         <StackPanel x:Name="SrtSettingsStackPanel" Grid.Column="1" Margin="20,0,0,0" IsVisibleChanged="SrtSettingsStackPanel_IsVisibleChanged">
                             <Label Content="SRT Settings:" Foreground="White" VerticalAlignment="Center"/>
-                            <RadioButton x:Name="CharacterNamesInBracketsRadioButton" Content="Character names in brackets" IsChecked="True" Foreground="White" Margin="0,5,0,0"/>
-                            <RadioButton x:Name="CharactersInSeparateFilesRadioButton" Content="Characters in separate files" Foreground="White" Margin="0,5,0,0"/>
+                            <CheckBox x:Name="CharactersInSeparateFilesRadioButton" Content="Actors in separate files" Foreground="White" Margin="0,5,0,0"/>
                         </StackPanel>
                     </Grid>
                 </StackPanel>

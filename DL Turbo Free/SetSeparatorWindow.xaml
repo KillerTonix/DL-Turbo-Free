@@ -28,6 +28,7 @@
                 <ComboBoxItem Content="(actor)"/>
                 <ComboBoxItem Content="actor/"/>
                 <ComboBoxItem Content="actor+"/>
+                <ComboBoxItem Content="actor:"/>
             </ComboBox>
         </StackPanel>
         <Button x:Name="ApplyButton" Style="{StaticResource TerminalBtn}" Content="Apply" Width="100" Height="30" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,10" Click="ApplyButton_Click"/>

@@ -54,7 +54,7 @@ namespace DL_Turbo_Free.Helper
                     // Case 3: Different Actor OR Huge Gap -> STOP MERGING
 
                     // A. Save the accumulated buffer to the list
-                    result.Add(CreateLine(currentStart, currentActor, currentBuilder.ToString()));
+                    result.Add(CreateLine(currentStart, currentEnd, currentActor, currentBuilder.ToString()));
 
                     // B. Reset buffers to start a NEW line with the current item
                     currentStart = nextStart;
@@ -66,25 +66,26 @@ namespace DL_Turbo_Free.Helper
                 }
             }
 
-                // Add the final remaining line
-                result.Add(CreateLine(currentStart, currentActor, currentBuilder.ToString()));
+            // Add the final remaining line
+            result.Add(CreateLine(currentStart, currentEnd, currentActor, currentBuilder.ToString()));
 
             return result;
         }
 
-        private ScriptLine CreateLine(TimeSpan start, string actor, string text)
+        private static ScriptLine CreateLine(TimeSpan start, TimeSpan end, string actor, string text)
         {
 
             return new ScriptLine
             {
                 RawStartTime = start,
+                RawEndTime = end,
                 Timestamp = start.ToString(FormateTime(start)),
                 Actor = actor,
                 Text = text
             };
         }
 
-        private string FormateTime(TimeSpan time)
+        private static string FormateTime(TimeSpan time)
         {
             // Logic to strip hour if 00:
             string timeFmt = (time.TotalHours >= 1) ? @"hh\:mm\:ss" : @"mm\:ss";

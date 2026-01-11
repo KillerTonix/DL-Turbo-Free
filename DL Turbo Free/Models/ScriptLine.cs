@@ -6,5 +6,6 @@
         public string Actor { get; set; } = string.Empty;
         public string Text { get; set; } = string.Empty;
         public TimeSpan RawStartTime { get; set; } // Kept for sorting/logic
+        public TimeSpan RawEndTime { get; set; } // Kept for sorting/logic
     }
 }

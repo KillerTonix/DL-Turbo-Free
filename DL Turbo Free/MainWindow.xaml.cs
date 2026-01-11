@@ -87,8 +87,7 @@ namespace DL_Turbo_Free
                 SetSeparatorBtn.Visibility = Visibility.Hidden;
 
                 ParsedSubtitle = ParseSubtitle.ParseSrt(file);
-                string jsonString = System.Text.Encoding.UTF8.GetString(ParsedSubtitle);
-                File.WriteAllText("debug_parsed_srt.json", jsonString);
+
 
             }
             else if (CheckFileType.GetFileType(file) == "ass")
@@ -99,7 +98,7 @@ namespace DL_Turbo_Free
                 SrtSettingsStackPanel.Visibility = Visibility.Visible;
                 SetSeparatorBtn.Visibility = Visibility.Visible;
 
-                //ParsedSubtitle = ParseSubtitle.ParseSrt(file);
+                ParsedSubtitle = ParseSubtitle.ParseAss(file);
             }
 
             ConvertingSettingsStackPanel.Visibility = Visibility.Visible;
@@ -121,13 +120,14 @@ namespace DL_Turbo_Free
                         MessageBox.Show("Error: No subtitles found in file.");
                         return;
                     }
+
                     var correctedData = SrtService.FillMissingActors(rawData);
                     var merger = new ScriptMerger();
                     var mergedLines = merger.MergeScript(correctedData);
                     var generator = new DocxService();
 
                     outputPath = Path.Combine(folder, $"{filename}.docx");
-                    generator.GenerateDocx(FilePathTextBox.Text, mergedLines);
+                    generator.GenerateDocx(outputPath, mergedLines);
                 }
                 catch (Exception ex)
                 {
@@ -136,8 +136,29 @@ namespace DL_Turbo_Free
             }
             else
             {
-                MessageBox.Show("Only 'X to DOCX' conversion is supported in this version.", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
-                return;
+                try
+                {
+                    List<SubtitleItem>? rawData = JsonSerializer.Deserialize(ParsedSubtitle, AppJsonContext.Default.ListSubtitleItem);
+                    if (rawData == null || rawData.Count == 0)
+                    {
+                        MessageBox.Show("Error: No subtitles found in file.");
+                        return;
+                    }
+
+                    var correctedData = SrtService.FillMissingActors(rawData);
+                    var merger = new ScriptMerger();
+                    var mergedLines = merger.MergeScript(correctedData);
+                    var generator = new DocxService();
+
+                    outputPath = Path.Combine(folder, $"{filename}.srt");
+                    bool separateFiles = CharactersInSeparateFilesRadioButton.IsChecked ?? false;
+                    AssToSrt.ConvertAssToSrt(outputPath, mergedLines, separateFiles);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Error: " + ex.Message);
+                }
+
             }
 
 
