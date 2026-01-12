@@ -8,6 +8,12 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
     <ApplicationIcon>DLTurboFree.ico</ApplicationIcon>
+    <Title>DL Turbo Free</Title>
+    <Description>A high-performance WPF application built with .NET 10 that converts subtitle files (.srt, .ass) into formatted Word documents (.docx) for dubbing and video production workflows.</Description>
+    <FileVersion>0.1.1</FileVersion>
+    <AssemblyVersion>0.1.1</AssemblyVersion>
+    <Version>0.1.1</Version>
+    <Copyright>Artur Tonoyan</Copyright>
   </PropertyGroup>
 
   <ItemGroup>

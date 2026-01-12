@@ -39,13 +39,12 @@ namespace DL_Turbo_Free.Helper
                     // Update the "End" time of our current merging block
                     currentEnd = TimeSpan.Parse(next.EndTime);
                 }
-                else if (isSameActor && gap > 2 && gap < 10)
+                else if (isSameActor && gap > 2)
                 {
                     // Case 2: Medium gap -> Merge with timestamp separator
-                    // Note: I added 'gap < 5' because usually if gap is huge (10s), you don't merge.
+                    // We add a timestamp marker before the next text
 
-                    string timeFmt = (nextStart.TotalHours >= 1) ? @"hh\:mm\:ss" : @"mm\:ss";
-                    currentBuilder.Append($" // {nextStart.ToString(timeFmt)} " + next.Text);
+                    currentBuilder.Append($" // {nextStart:h\\:mm\\:ss} " + next.Text);
 
                     currentEnd = TimeSpan.Parse(next.EndTime);
                 }
@@ -79,18 +78,10 @@ namespace DL_Turbo_Free.Helper
             {
                 RawStartTime = start,
                 RawEndTime = end,
-                Timestamp = start.ToString(FormateTime(start)),
+                Timestamp = start.ToString(@"h\:mm\:ss"),
                 Actor = actor,
                 Text = text
             };
-        }
-
-        private static string FormateTime(TimeSpan time)
-        {
-            // Logic to strip hour if 00:
-            string timeFmt = (time.TotalHours >= 1) ? @"hh\:mm\:ss" : @"mm\:ss";
-            return timeFmt;
-
-        }
+        }      
     }
 }
