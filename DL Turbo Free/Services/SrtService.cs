@@ -10,9 +10,7 @@ using System.Text.Unicode;
 namespace DL_Turbo_Free.Services
 {
     public partial class SrtService
-    {
-        // .NET 7+ / .NET 10 Feature: Source Generated Regex
-        // This generates optimized parsing code at compile time, avoiding runtime interpretation overhead.
+    {    
         [GeneratedRegex(@"(\d{2}:\d{2}:\d{2}[,\.]\d{3})")]
         private static partial Regex RxTiming();
 
@@ -23,133 +21,156 @@ namespace DL_Turbo_Free.Services
         /// </summary>
         public byte[] ConvertSrtToJsonInMemory(string filePath)
         {
-            var rawLines = new List<SubtitleItem>();
-            // ReadAllTextAsync is also available if you want non-blocking UI
-            string fileContent = File.ReadAllText(filePath, System.Text.Encoding.UTF8);
-
-            // Standardize newlines
-            // In .NET 10, string manipulation is heavily optimized
-            var blocks = Regex.Split(fileContent.Replace("\r\n", "\n"), @"\n\s*\n");
-
-            int globalIdCounter = 1;
-
-            foreach (var block in blocks)
+            try
             {
-                if (string.IsNullOrWhiteSpace(block)) continue;
+                var rawLines = new List<SubtitleItem>();
+                // ReadAllTextAsync is also available if you want non-blocking UI
+                string fileContent = File.ReadAllText(filePath, System.Text.Encoding.UTF8);
 
-                var lines = block.Split('\n');
-                if (lines.Length < 2) continue;
+                // Standardize newlines
+                // In .NET 10, string manipulation is heavily optimized
+                var blocks = Regex.Split(fileContent.Replace("\r\n", "\n"), @"\n\s*\n");
 
-                // Use the Source Generated Regex
-                var timeMatches = RxTiming().Matches(block);
-                if (timeMatches.Count < 2) continue;
+                int globalIdCounter = 1;
 
-                string start = timeMatches[0].Value.Replace(",", ".");
-                string end = timeMatches[1].Value.Replace(",", ".");
-
-                // Extract text lines (skipping ID and Timestamp)
-                // leveraging modern LINQ optimization
-                var textOnlyLines = lines.Where(l => !RxTiming().IsMatch(l) && !int.TryParse(l, out _)).ToList();
-
-
-                foreach (var line in textOnlyLines)
+                foreach (var block in blocks)
                 {
-                    if (string.IsNullOrWhiteSpace(line)) continue;
+                    if (string.IsNullOrWhiteSpace(block)) continue;
 
-                    string currentActor = "Undefined"; // Default
-                    string currentText = line.Trim();
+                    var lines = block.Split('\n');
+                    if (lines.Length < 2) continue;
+
+                    // Use the Source Generated Regex
+                    var timeMatches = RxTiming().Matches(block);
+                    if (timeMatches.Count < 2) continue;
+
+                    string start = timeMatches[0].Value.Replace(",", ".");
+                    string end = timeMatches[1].Value.Replace(",", ".");
+
+                    // Extract text lines (skipping ID and Timestamp)
+                    // leveraging modern LINQ optimization
+                    var textOnlyLines = lines.Where(l => !RxTiming().IsMatch(l) && !int.TryParse(l, out _)).ToList();
 
 
-                    var bracketMatch = RxBracketActor.Match(line);
-                    if (bracketMatch.Success)
+                    foreach (var line in textOnlyLines)
                     {
-                        currentActor = CleanActorName(bracketMatch.Groups["actor"].Value.Trim());
-                        // Remove the [Name] tag from text
-                        currentText = RxBracketActor.Replace(line, "").Trim();
+                        if (string.IsNullOrWhiteSpace(line)) continue;
+
+                        string currentActor = "Undefined"; // Default
+                        string currentText = line.Trim();
+
+
+                        var bracketMatch = RxBracketActor.Match(line);
+                        if (bracketMatch.Success)
+                        {
+                            currentActor = CleanActorName(bracketMatch.Groups["actor"].Value.Trim());
+                            // Remove the [Name] tag from text
+                            currentText = RxBracketActor.Replace(line, "").Trim();
+                        }
+
+
+                        // Add the item
+                        // Note: We create a NEW item for every line found in the block
+                        rawLines.Add(new SubtitleItem(
+                            globalIdCounter++,
+                            start,
+                            end,
+                            currentActor,
+                            currentText
+                        ));
                     }
-
-
-                    // Add the item
-                    // Note: We create a NEW item for every line found in the block
-                    rawLines.Add(new SubtitleItem(
-                        globalIdCounter++,
-                        start,
-                        end,
-                        currentActor,
-                        currentText
-                    ));
                 }
+
+
+                // SERIALIZATION
+                var options = new JsonSerializerOptions
+                {
+                    WriteIndented = true,
+                    // This tells the serializer: "Don't escape Unicode characters (like Cyrillic)"
+                    Encoder = JavaScriptEncoder.Create(UnicodeRanges.All)
+                };
+
+                // 2. Initialize your Context with these custom options
+                var context = new AppJsonContext(options);
+
+                // 3. Serialize using the configured context
+                return JsonSerializer.SerializeToUtf8Bytes(rawLines, context.ListSubtitleItem);
+            }
+            catch (Exception ex)
+            {
+                ExceptionMessages.ShowMessage(ex);
+                return []; // Return empty byte array on failure
             }
 
-
-            // SERIALIZATION
-            var options = new JsonSerializerOptions
-            {
-                WriteIndented = true,
-                // This tells the serializer: "Don't escape Unicode characters (like Cyrillic)"
-                Encoder = JavaScriptEncoder.Create(UnicodeRanges.All)
-            };
-
-            // 2. Initialize your Context with these custom options
-            var context = new AppJsonContext(options);
-
-            // 3. Serialize using the configured context
-            return JsonSerializer.SerializeToUtf8Bytes(rawLines, context.ListSubtitleItem);
         }
-
-
         // Helper to strip special characters from Actor names
         // Removes: [ ] ( ) / \ + and trims spaces
         private static string CleanActorName(string rawName)
         {
-            if (string.IsNullOrWhiteSpace(rawName)) return "Undefined";
+            try
+            {
+                if (string.IsNullOrWhiteSpace(rawName)) return "Undefined";
 
-            // Replace known delimiters with empty strings
-            // You can add more symbols here if needed
-            var cleaned = rawName
-                .Replace("[", "")
-                .Replace("]", "")
-                .Replace("(", "")
-                .Replace(")", "")
-                .Replace("/", "")
-                .Replace("\\", "") // Backslash
-                .Replace("+", "")
-                .Replace("*", "")
-                .Replace("-", "")
-                .Replace(":", "")
-                .Trim();
+                // Replace known delimiters with empty strings
+                // You can add more symbols here if needed
+                var cleaned = rawName
+                    .Replace("[", "")
+                    .Replace("]", "")
+                    .Replace("(", "")
+                    .Replace(")", "")
+                    .Replace("/", "")
+                    .Replace("\\", "") // Backslash
+                    .Replace("+", "")
+                    .Replace("*", "")
+                    .Replace("-", "")
+                    .Replace(":", "")
+                    .Trim();
 
-            return string.IsNullOrWhiteSpace(cleaned) ? "Undefined" : cleaned;
+                return string.IsNullOrWhiteSpace(cleaned) ? "Undefined" : cleaned;
+            }
+            catch (Exception ex)
+            {
+                ExceptionMessages.ShowMessage(ex);
+                return "Undefined"; // Fallback in case of unexpected errors
+            }
         }
 
         public static List<SubtitleItem> FillMissingActors(List<SubtitleItem> items)
         {
-            var processedList = new List<SubtitleItem>();
-
-            // Default fallback if the very first line is undefined
-            string lastKnownActor = "Unknown";
-
-            foreach (var item in items)
+            try
             {
-                // Check if current actor is "Undefined" (or "0_0" from our previous fallback)
-                bool isUndefined = string.Equals(item.Actor, "Undefined", StringComparison.OrdinalIgnoreCase)
-                                || string.Equals(item.Actor, "0_0", StringComparison.OrdinalIgnoreCase);
+                var processedList = new List<SubtitleItem>();
 
-                if (isUndefined)
+                // Default fallback if the very first line is undefined
+                string lastKnownActor = "Unknown";
+
+                foreach (var item in items)
                 {
-                    // Create a COPY of the item, but replace the Actor with the last known one
-                    var fixedItem = item with { Actor = lastKnownActor };
-                    processedList.Add(fixedItem);
+                    // Check if current actor is "Undefined" (or "0_0" from our previous fallback)
+                    bool isUndefined = string.Equals(item.Actor, "Undefined", StringComparison.OrdinalIgnoreCase)
+                                    || string.Equals(item.Actor, "0_0", StringComparison.OrdinalIgnoreCase);
+
+                    if (isUndefined)
+                    {
+                        // Create a COPY of the item, but replace the Actor with the last known one
+                        var fixedItem = item with { Actor = lastKnownActor };
+                        processedList.Add(fixedItem);
+                    }
+                    else
+                    {
+                        // Found a real actor! Update our memory and keep the item as is.
+                        lastKnownActor = item.Actor;
+                        processedList.Add(item);
+                    }
                 }
-                else
-                {
-                    // Found a real actor! Update our memory and keep the item as is.
-                    lastKnownActor = item.Actor;
-                    processedList.Add(item);
-                }
+
+                return processedList;
             }
-
-            return processedList;
+            catch (Exception ex)
+            {
+                ExceptionMessages.ShowMessage(ex);
+                return items; // Return original list on failure
+            }
         }
     }
 }

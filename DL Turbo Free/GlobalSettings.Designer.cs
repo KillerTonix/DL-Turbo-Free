@@ -58,5 +58,101 @@ namespace DL_Turbo_Free {
                 this["SelectedSeparatorIndex"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool OpenTheFolderAfterConvertion {
+            get {
+                return ((bool)(this["OpenTheFolderAfterConvertion"]));
+            }
+            set {
+                this["OpenTheFolderAfterConvertion"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool CloseTheAppAfterConvertion {
+            get {
+                return ((bool)(this["CloseTheAppAfterConvertion"]));
+            }
+            set {
+                this["CloseTheAppAfterConvertion"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int DocxFontSizeIndex {
+            get {
+                return ((int)(this["DocxFontSizeIndex"]));
+            }
+            set {
+                this["DocxFontSizeIndex"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int DocxTableStyleIndex {
+            get {
+                return ((int)(this["DocxTableStyleIndex"]));
+            }
+            set {
+                this["DocxTableStyleIndex"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int DocxTimingFormatIndex {
+            get {
+                return ((int)(this["DocxTimingFormatIndex"]));
+            }
+            set {
+                this["DocxTimingFormatIndex"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("12")]
+        public int DocxFontSizeValue {
+            get {
+                return ((int)(this["DocxFontSizeValue"]));
+            }
+            set {
+                this["DocxFontSizeValue"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Default")]
+        public string DocxTableStyleValue {
+            get {
+                return ((string)(this["DocxTableStyleValue"]));
+            }
+            set {
+                this["DocxTableStyleValue"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("d")]
+        public string DocxTimingFormatValue {
+            get {
+                return ((string)(this["DocxTimingFormatValue"]));
+            }
+            set {
+                this["DocxTimingFormatValue"] = value;
+            }
+        }
     }
 }

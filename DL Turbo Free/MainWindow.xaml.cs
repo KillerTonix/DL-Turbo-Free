@@ -8,6 +8,7 @@ using System.IO;
 using System.Reflection;
 using System.Text.Json;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 
 namespace DL_Turbo_Free
@@ -24,10 +25,7 @@ namespace DL_Turbo_Free
         public MainWindow()
         {
             InitializeComponent();
-
             FileOpenOrDragAndDropBorder.Visibility = Visibility.Visible;
-            string? version = Assembly.GetExecutingAssembly().GetName().Version?.ToString();
-            VersionLabel.Content = $"Version: {version}";
         }
 
         private void FileOpenOrDragAndDropBorder_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -42,8 +40,9 @@ namespace DL_Turbo_Free
             {
                 FileOpenOrDragAndDropBorder.Visibility = Visibility.Hidden;
 
-                InputFilePath = openFileDialog.FileName;
+
                 DoUIChanges(openFileDialog.FileName);
+                InputFilePath = openFileDialog.FileName;
             }
         }
 
@@ -60,21 +59,40 @@ namespace DL_Turbo_Free
                     return;
                 }
                 FileOpenOrDragAndDropBorder.Visibility = Visibility.Hidden;
+                DoUIChanges(files[0]);
                 InputFilePath = files[0];
-                DoUIChanges(files[0]); //do ui changes
             }
         }
-           
+
         private void DoUIChanges(string file)
         {
+            
+            string? version = Assembly.GetExecutingAssembly().GetName().Version?.ToString();
+
+            bool openFolderAfterConversion = GlobalSettings.Default.OpenTheFolderAfterConvertion;
+            bool closeAppAfterConversion = GlobalSettings.Default.CloseTheAppAfterConvertion;
+            int fontSizeIndex = GlobalSettings.Default.DocxFontSizeIndex;
+            int tableStyleIndex = GlobalSettings.Default.DocxTableStyleIndex;
+            int timingFormatIndex = GlobalSettings.Default.DocxTimingFormatIndex;
+
+
+            OpenTheFolderAfterConvertionChkBox.IsChecked = openFolderAfterConversion;
+            CloseTheAppAfterConvertionChkBox.IsChecked = closeAppAfterConversion;
+            FontSizeComboBox.SelectedIndex = fontSizeIndex;
+            TableStyleComboBox.SelectedIndex = tableStyleIndex;
+            TimingFormatComboBox.SelectedIndex = timingFormatIndex;
+            VersionLabel.Content = $"Version: {version}";
+
             ClearAllData();
             FilePathTextBox.Text = file;
+
+
             if (CheckFileType.GetFileType(file) == "srt")
             {
                 InputFileFormat = "srt";
                 XtoYRadioButton.Content = "SRT to ASS";
                 XtoDocxRadioButton.Content = "SRT to DOCX";
-                SrtSettingsStackPanel.Visibility = Visibility.Hidden;
+                SrtSettingsStackPanel.Visibility = Visibility.Collapsed;
                 ProcessingRulesBorder.Visibility = Visibility.Visible;
             }
             else if (CheckFileType.GetFileType(file) == "ass")
@@ -87,9 +105,18 @@ namespace DL_Turbo_Free
 
         }
 
-        private void ConvertButton_Click(object sender, RoutedEventArgs e)
+
+
+        // <<<-----Conversion Button----->>>
+        private async void ConvertButton_Click(object sender, RoutedEventArgs e)
         {
+            ConvertButton.IsEnabled = false; // Prevent double clicks
             ParsedSubtitle = [];
+
+            string folder = Path.GetDirectoryName(FilePathTextBox.Text) ?? string.Empty;
+            string filename = Path.GetFileNameWithoutExtension(FilePathTextBox.Text);
+            string outputPath = string.Empty;
+
 
             if (InputFileFormat == "srt")
                 ParsedSubtitle = ParseSubtitle.ParseSrt(InputFilePath);
@@ -98,10 +125,6 @@ namespace DL_Turbo_Free
             bool isDynamic = false;
             if (SetDynamicTiming.IsChecked == true)
                 isDynamic = true;
-
-            string folder = Path.GetDirectoryName(FilePathTextBox.Text) ?? string.Empty;
-            string filename = Path.GetFileNameWithoutExtension(FilePathTextBox.Text);
-            string outputPath = string.Empty;
 
             if (XtoDocxRadioButton.IsChecked == true)
             {
@@ -124,7 +147,7 @@ namespace DL_Turbo_Free
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("Error: " + ex.Message);
+                    ExceptionMessages.ShowMessage(ex);
                 }
             }
             else
@@ -154,9 +177,11 @@ namespace DL_Turbo_Free
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("Error: " + ex.Message);
+                    ExceptionMessages.ShowMessage(ex);
                 }
             }
+
+            ConvertButton.IsEnabled = true;
             SuccessMessageBox(folder, outputPath); //show success message box
         }
 
@@ -181,7 +206,6 @@ namespace DL_Turbo_Free
             InputFileFormat = string.Empty;
             InputFilePath = string.Empty;
             FilePathTextBox.Text = string.Empty;
-            FileOpenOrDragAndDropBorder.Visibility = Visibility.Visible;
             SrtSettingsStackPanel.Visibility = Visibility.Collapsed;
             ProcessingRulesBorder.Visibility = Visibility.Collapsed;
         }
@@ -197,12 +221,15 @@ namespace DL_Turbo_Free
         private void XtoDocxRadioButton_Checked(object sender, RoutedEventArgs e)
         {
             SrtSettingsStackPanel?.Visibility = Visibility.Collapsed;
+            DocxSettingsStackPanel?.Visibility = Visibility.Visible;
         }
 
         private void XtoYRadioButton_Checked(object sender, RoutedEventArgs e)
         {
             if (InputFileFormat == "ass")
                 SrtSettingsStackPanel.Visibility = Visibility.Visible;
+
+            DocxSettingsStackPanel.Visibility = Visibility.Collapsed;
         }
 
         private void SetSeparatorBtn_Click(object sender, RoutedEventArgs e)
@@ -222,15 +249,77 @@ namespace DL_Turbo_Free
             if (openFileDialog.ShowDialog() == true)
             {
                 string file = openFileDialog.FileName;
+                DoUIChanges(file);
                 InputFilePath = file;
-                DoUIChanges(file); //do ui changes
+
             }
-        }        
+        }
 
         private void AboutButton_Click(object sender, RoutedEventArgs e)
         {
             AboutWindow about = new();
             about.ShowDialog();
         }
+
+        private void OpenTheFolderAfterConvertionChkBox_Checked(object sender, RoutedEventArgs e)
+        {
+            GlobalSettings.Default.OpenTheFolderAfterConvertion = true;
+            GlobalSettings.Default.Save();
+        }
+
+        private void OpenTheFolderAfterConvertionChkBox_Unchecked(object sender, RoutedEventArgs e)
+        {
+            GlobalSettings.Default.OpenTheFolderAfterConvertion = false;
+            GlobalSettings.Default.Save();
+        }
+
+        private void CloseTheAppAfterConvertionChkBox_Checked(object sender, RoutedEventArgs e)
+        {
+            GlobalSettings.Default.CloseTheAppAfterConvertion = true;
+            GlobalSettings.Default.Save();
+        }
+
+        private void CloseTheAppAfterConvertionChkBox_Unchecked(object sender, RoutedEventArgs e)
+        {
+            GlobalSettings.Default.CloseTheAppAfterConvertion = false;
+            GlobalSettings.Default.Save();
+        }
+
+        private void FontSizeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            ComboBox cmb = (ComboBox)sender;
+            GlobalSettings.Default.DocxFontSizeIndex = cmb.SelectedIndex;
+            if (cmb.SelectedItem is ComboBoxItem selectedItem)
+            {
+                if (int.TryParse(selectedItem.Content.ToString(), out int size))                
+                    GlobalSettings.Default.DocxFontSizeValue = size;                
+            }
+            GlobalSettings.Default.Save();
+        }
+
+        private void TableStyleComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            ComboBox cmb = (ComboBox)sender;
+            GlobalSettings.Default.DocxTableStyleIndex = cmb.SelectedIndex;
+            if (cmb.SelectedItem is ComboBoxItem selectedItem)
+            {
+                if (selectedItem.Content.ToString() != null)
+                    GlobalSettings.Default.DocxTableStyleValue = selectedItem.Content.ToString();
+            }
+            GlobalSettings.Default.Save();
+        }
+
+        private void TimingFormatComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            ComboBox cmb = (ComboBox)sender;
+            GlobalSettings.Default.DocxTimingFormatIndex = cmb.SelectedIndex;
+            if (cmb.SelectedItem is ComboBoxItem selectedItem)
+            {
+                if (selectedItem.Content.ToString() != null)
+                    GlobalSettings.Default.DocxTimingFormatValue = selectedItem.Content.ToString();
+            }
+            GlobalSettings.Default.Save();
+        }
+
     }
 }

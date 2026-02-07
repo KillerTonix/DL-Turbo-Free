@@ -1,5 +1,5 @@
 ﻿using DL_Turbo_Free.Services;
-using System.Windows;
+using System.Reflection;
 
 namespace DL_Turbo_Free.Helper
 {
@@ -11,13 +11,21 @@ namespace DL_Turbo_Free.Helper
         public static byte[] ParseSrt(string filePath)
         {
             try { byte[] _memoryJsonData = _srtService.ConvertSrtToJsonInMemory(filePath); return _memoryJsonData; }
-            catch (Exception ex) { MessageBox.Show($"Error: {ex.Message}"); return []; }
+            catch (Exception ex)
+            {
+                ExceptionMessages.ShowMessage(ex);
+                return [];
+            }
         }
 
         public static byte[] ParseAss(string filePath)
         {
             try { byte[] _memoryJsonData = _AssService.ConvertAssToJsonInMemory(filePath); return _memoryJsonData; }
-            catch (Exception ex) { MessageBox.Show($"Error: {ex.Message}"); return []; }
+            catch (Exception ex)
+            {
+                ExceptionMessages.ShowMessage(ex);
+                return [];
+            }
         }
     }
 }

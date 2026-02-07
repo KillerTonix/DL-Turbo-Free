@@ -35,6 +35,143 @@
             </Setter>
         </Style>
 
+        <Style x:Key="ComboBoxToggleButton" TargetType="{x:Type ToggleButton}">
+            <Setter Property="OverridesDefaultStyle" Value="true"/>
+            <Setter Property="IsTabStop" Value="false"/>
+            <Setter Property="Focusable" Value="false"/>
+            <Setter Property="ClickMode" Value="Press"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type ToggleButton}">
+                        <Border x:Name="templateRoot" 
+                        Background="#3E3E42" 
+                        BorderThickness="0" 
+                        CornerRadius="4" 
+                        SnapsToDevicePixels="true">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="20"/>
+                                </Grid.ColumnDefinitions>
+                                <Path x:Name="arrow" 
+                              Grid.Column="1" 
+                              Fill="White" 
+                              HorizontalAlignment="Center" 
+                              VerticalAlignment="Center" 
+                              Data="M 0 0 L 4 4 L 8 0 Z"/>
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="true">
+                                <Setter Property="Background" TargetName="templateRoot" Value="#505050"/>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="true">
+                                <Setter Property="Background" TargetName="templateRoot" Value="#007ACC"/>
+                                <Setter Property="Fill" TargetName="arrow" Value="White"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="ModernComboBoxItem" TargetType="{x:Type ComboBoxItem}">
+            <Setter Property="SnapsToDevicePixels" Value="True"/>
+            <Setter Property="Padding" Value="10,5"/>
+            <Setter Property="HorizontalContentAlignment" Value="{Binding HorizontalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}"/>
+            <Setter Property="VerticalContentAlignment" Value="{Binding VerticalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type ComboBoxItem}">
+                        <Border x:Name="bd" 
+                        Background="{TemplateBinding Background}" 
+                        Padding="{TemplateBinding Padding}" 
+                        SnapsToDevicePixels="true">
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" 
+                                      VerticalAlignment="{TemplateBinding VerticalContentAlignment}" 
+                                      SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" TargetName="bd" Value="#505050"/>
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter Property="Background" TargetName="bd" Value="#007ACC"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="ModernComboBox" TargetType="{x:Type ComboBox}">
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Background" Value="#3E3E42"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="10,5"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto"/>
+            <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto"/>
+            <Setter Property="ScrollViewer.CanContentScroll" Value="true"/>
+            <Setter Property="ItemContainerStyle" Value="{StaticResource ModernComboBoxItem}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type ComboBox}">
+                        <Grid x:Name="templateRoot" SnapsToDevicePixels="true">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="0"/>
+                            </Grid.ColumnDefinitions>
+
+                            <ToggleButton x:Name="toggleButton" 
+                                  Grid.ColumnSpan="2" 
+                                  Background="{TemplateBinding Background}" 
+                                  BorderThickness="{TemplateBinding BorderThickness}" 
+                                  IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}" 
+                                  Style="{StaticResource ComboBoxToggleButton}"/>
+
+                            <ContentPresenter x:Name="contentPresenter" 
+                                      IsHitTestVisible="False" 
+                                      Content="{TemplateBinding SelectionBoxItem}" 
+                                      ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}" 
+                                      ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}" 
+                                      Margin="{TemplateBinding Padding}" 
+                                      HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" 
+                                      VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+
+                            <Popup x:Name="PART_Popup" 
+                           AllowsTransparency="True" 
+                           Grid.ColumnSpan="2" 
+                           IsOpen="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}" 
+                           Margin="1" 
+                           PopupAnimation="Slide" 
+                           Placement="Bottom">
+                                <Border x:Name="dropDownBorder" 
+                                Background="#2D2D30" 
+                                BorderBrush="#3F3F46" 
+                                BorderThickness="1" 
+                                MaxHeight="{TemplateBinding MaxDropDownHeight}" 
+                                MinWidth="{Binding ActualWidth, ElementName=templateRoot}">
+                                    <ScrollViewer x:Name="DropDownScrollViewer">
+                                        <Grid x:Name="grid" RenderOptions.ClearTypeHint="Enabled">
+                                            <Canvas x:Name="canvas" HorizontalAlignment="Left" Height="0" VerticalAlignment="Top" Width="0">
+                                                <Rectangle x:Name="opaqueRect" Fill="{Binding Background, ElementName=dropDownBorder}" Height="{Binding ActualHeight, ElementName=dropDownBorder}" Width="{Binding ActualWidth, ElementName=dropDownBorder}"/>
+                                            </Canvas>
+                                            <ItemsPresenter x:Name="ItemsPresenter" KeyboardNavigation.DirectionalNavigation="Contained" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+                                        </Grid>
+                                    </ScrollViewer>
+                                </Border>
+                            </Popup>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+
         <Style x:Key="PrimaryBtn" TargetType="Button" BasedOn="{StaticResource ModernBtn}">
             <Setter Property="Background" Value="#007ACC"/>
             <Setter Property="FontWeight" Value="Bold"/>
@@ -120,6 +257,50 @@
                             <CheckBox x:Name="CharactersInSeparateFilesRadioButton" Content="Split Actors into separate files"/>
                         </StackPanel>
                     </Border>
+                    <Border x:Name="DocxSettingsStackPanel" Style="{StaticResource CardBorder}" Visibility="Visible">
+                        <StackPanel>
+                            <Label Content="Docx Options" Style="{StaticResource SectionHeader}"/>
+                            
+                            <UniformGrid Columns="2" VerticalAlignment="Center">
+                                <Label Content="Set font size:" Foreground="#888" FontSize="12" Margin="0,0,10,0"/>
+                                <ComboBox x:Name="FontSizeComboBox" Style="{StaticResource ModernComboBox}" SelectionChanged="FontSizeComboBox_SelectionChanged">
+                                    <ComboBoxItem Content="8"/>
+                                    <ComboBoxItem Content="9"/>
+                                    <ComboBoxItem Content="10"/>
+                                    <ComboBoxItem Content="11"/>
+                                    <ComboBoxItem Content="12"/>
+                                    <ComboBoxItem Content="13"/>
+                                    <ComboBoxItem Content="14"/>
+                                    <ComboBoxItem Content="15"/>
+                                    <ComboBoxItem Content="16"/>
+                                    <ComboBoxItem Content="17"/>
+                                    <ComboBoxItem Content="18"/>
+                                    <ComboBoxItem Content="19"/>
+                                    <ComboBoxItem Content="20"/>
+                                </ComboBox>
+                            </UniformGrid>
+                            
+                            <UniformGrid VerticalAlignment="Center" Columns="2" Margin="0,10,0,0">
+                                <Label Content="Set table design:" Foreground="#888" FontSize="12" Margin="0,0,10,0"/>
+                                <ComboBox x:Name="TableStyleComboBox" Style="{StaticResource ModernComboBox}" SelectionChanged="TableStyleComboBox_SelectionChanged">
+                                    <ComboBoxItem Content="Default"/>
+                                    <ComboBoxItem Content="Light Grid"/>                                                 
+                                    <ComboBoxItem Content="Light List"/>
+                                </ComboBox>
+                            </UniformGrid>
+                            
+                            <UniformGrid VerticalAlignment="Center" Margin="0,10,0,0" Columns="2">
+                                <Label Content="Timing format:" Foreground="#888" FontSize="12" Margin="0,0,10,0"/>
+                                <ComboBox x:Name="TimingFormatComboBox" Style="{StaticResource ModernComboBox}" SelectionChanged="TimingFormatComboBox_SelectionChanged">
+                                    <ComboBoxItem Content="hh:mm:ss (00:00:00)"/>
+                                    <ComboBoxItem Content="h:mm:ss (0:00:00)"/>
+                                    <ComboBoxItem Content="mm:ss (00:00)"/>
+                                    <ComboBoxItem Content="mm:ss (00:00), after hour set hh:mm:ss (0:00:00)"/>
+                                </ComboBox>
+                            </UniformGrid>
+                            
+                        </StackPanel>
+                    </Border>
                 </StackPanel>
 
                 <StackPanel Grid.Column="1" Margin="10,0,0,0">
@@ -150,8 +331,8 @@
                     <Border Style="{StaticResource CardBorder}" Visibility="Visible" Height="110">
                         <StackPanel>
                             <Label Content="After Conversion" Style="{StaticResource SectionHeader}"/>
-                            <CheckBox x:Name="OpenTheFolderAfterConvertionChkBox" Content="Open output folder"/>
-                            <CheckBox x:Name="CloseTheAppAfterConvertionChkBox" Content="Close application"/>
+                            <CheckBox x:Name="OpenTheFolderAfterConvertionChkBox" Content="Open output folder" Checked="OpenTheFolderAfterConvertionChkBox_Checked" Unchecked="OpenTheFolderAfterConvertionChkBox_Unchecked"/>
+                            <CheckBox x:Name="CloseTheAppAfterConvertionChkBox" Content="Close application" Checked="CloseTheAppAfterConvertionChkBox_Checked" Unchecked="CloseTheAppAfterConvertionChkBox_Unchecked"/>
                         </StackPanel>
                     </Border>
                 </StackPanel>
