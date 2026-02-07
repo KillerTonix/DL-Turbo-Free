@@ -15,7 +15,7 @@ namespace DL_Turbo_Free.Services
         {
             string filename = Path.GetFileNameWithoutExtension(outputPath);
             // 1. Setup Paths
-           
+
 
             // 2. Load Template
             string templatePath = Path.Combine(AppPath, "blank_pattern.docx");
@@ -25,12 +25,12 @@ namespace DL_Turbo_Free.Services
             // 3. Add Title
             var p = doc.InsertParagraph(filename);
             p.Alignment = Alignment.center;
-            p.FontSize(16).Font("Calibri").Bold();
+            p.FontSize(16).Font("Arial").Bold();
 
             // 4. Add Actor Header (List of unique actors)
             var uniqueActors = lines.Select(x => x.Actor).Distinct().OrderBy(x => x).ToList();
             var pActors = doc.InsertParagraph("Актёры: ");
-            pActors.FontSize(11).Font("Calibri");
+            pActors.FontSize(11).Font("Arial");
 
             foreach (var actor in uniqueActors)
             {
@@ -75,7 +75,6 @@ namespace DL_Turbo_Free.Services
             }
 
             doc.InsertTable(table);
-
             // 6. Statistics Section
             AddStatistics(doc, lines);
 
@@ -115,33 +114,42 @@ namespace DL_Turbo_Free.Services
 
         private void AddStatistics(DocX doc, List<ScriptLine> lines)
         {
-            doc.InsertParagraph("\n\nСТАТИСТИКА ПО КОЛИЧЕСТВУ РЕПЛИК\n")
-               .Font("Arial").FontSize(12).Bold().UnderlineStyle(UnderlineStyle.singleLine);
+            var p = doc.InsertParagraph("\n\nСТАТИСТИКА ПО КОЛИЧЕСТВУ РЕПЛИК\n");
+            p.Alignment = Alignment.center;
+            p.FontSize(16).Font("Arial").Bold().UnderlineStyle(UnderlineStyle.singleLine);
 
-            var stats = lines.GroupBy(x => x.Actor)
+
+            // OPTIONAL: Add .Trim() to ensure "John" and "John " are counted as the same actor
+            var stats = lines.Where(x => !string.IsNullOrWhiteSpace(x.Actor)) // Filter empty actors
+                             .GroupBy(x => x.Actor.Trim())
                              .Select(g => new { Actor = g.Key, Count = g.Count() })
                              .OrderByDescending(x => x.Count)
                              .ToList();
 
-            var table = doc.AddTable(stats.Count, 2);
+
+            // FIX 1: Add +1 to the row count to make room for the Header
+            var table = doc.AddTable(stats.Count + 1, 2);
             table.AutoFit = AutoFit.Contents;
 
-            // Header row
-            table.Rows[0].Cells[0].Paragraphs.First().Append("Актёр").Font("Arial").FontSize(12).Bold();
-            table.Rows[0].Cells[1].Paragraphs.First().Append("Количество реплик").Font("Arial").FontSize(12).Bold();
+            // Header row (Row 0)
+            table.Rows[0].Cells[0].Paragraphs.First().Append("Актёр").Font("Arial").FontSize(14).Bold().Alignment = Alignment.center;
+            table.Rows[0].Cells[1].Paragraphs.First().Append("Количество реплик").Font("Arial").FontSize(14).Bold().Alignment = Alignment.center;
 
             // Data rows
-            for (int i = 1; i < stats.Count; i++)
+            for (int i = 0; i < stats.Count; i++)
             {
-                // Fix: Append returns 'Paragraph', so we pass that 'Paragraph' to ApplyHighlight
-                var p = table.Rows[i].Cells[0].Paragraphs.First().Append(stats[i].Actor);
+                // FIX 2: Use [i + 1] to write to the row AFTER the header
+                var row = table.Rows[i + 1];
 
-                table.Rows[i].Cells[0].SetBorder(TableCellBorderType.Bottom, _blankBorder);
+                // Actor Name column
+                row.Cells[0].Paragraphs.First().Append(stats[i].Actor);
+                row.Cells[0].SetBorder(TableCellBorderType.Bottom, _blankBorder);
 
                 // Count column
-                table.Rows[i].Cells[1].Paragraphs.First().Append(stats[i].Count.ToString());
-                table.Rows[i].Cells[1].SetBorder(TableCellBorderType.Bottom, _blankBorder);
+                row.Cells[1].Paragraphs.First().Append(stats[i].Count.ToString()).Alignment = Alignment.center;
+                row.Cells[1].SetBorder(TableCellBorderType.Bottom, _blankBorder);
             }
+
             doc.InsertTable(table);
         }
 

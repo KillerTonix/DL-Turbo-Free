@@ -5,8 +5,9 @@ namespace DL_Turbo_Free.Helper
 {
     public class ScriptMerger
     {
-        public List<ScriptLine> MergeScript(List<SubtitleItem> rawItems)
+        public List<ScriptLine> MergeScript(List<SubtitleItem> rawItems, bool isDynamic)
         {
+
             var result = new List<ScriptLine>();
             if (rawItems.Count == 0) return result;
 
@@ -30,38 +31,61 @@ namespace DL_Turbo_Free.Helper
                 bool isSameActor = currentActor == next.Actor;
 
                 // --- MERGING RULES ---
-
-                if (isSameActor && gap <= 2)
+                if (isDynamic)
                 {
-                    // Case 1: Small gap -> Merge silently
-                    currentBuilder.Append(" " + next.Text);
+                    if (isSameActor && gap <= 2)
+                    {
+                        currentBuilder.Append(" . . . " + next.Text);
+                        currentEnd = TimeSpan.Parse(next.EndTime);
+                    }
+                    else if (isSameActor && gap > 2 && gap <= 3)
+                    {
+                        currentBuilder.Append(" / " + next.Text);
+                        currentEnd = TimeSpan.Parse(next.EndTime);
+                    }
+                    else if (isSameActor && gap > 3 && gap <= 5)
+                    {
+                        currentBuilder.Append($" / {nextStart:h\\:mm\\:ss} " + next.Text);
+                        currentEnd = TimeSpan.Parse(next.EndTime);
+                    }
+                    else if (isSameActor && gap > 5)
+                    {
+                        currentBuilder.Append($" // {nextStart:h\\:mm\\:ss} " + next.Text);
+                        currentEnd = TimeSpan.Parse(next.EndTime);
+                    }
+                    else
+                    {
+                        result.Add(CreateLine(currentStart, currentEnd, currentActor, currentBuilder.ToString()));
+                        currentStart = nextStart;
+                        currentEnd = TimeSpan.Parse(next.EndTime);
+                        currentActor = next.Actor;
 
-                    // Update the "End" time of our current merging block
-                    currentEnd = TimeSpan.Parse(next.EndTime);
-                }
-                else if (isSameActor && gap > 2)
-                {
-                    // Case 2: Medium gap -> Merge with timestamp separator
-                    // We add a timestamp marker before the next text
-
-                    currentBuilder.Append($" // {nextStart:h\\:mm\\:ss} " + next.Text);
-
-                    currentEnd = TimeSpan.Parse(next.EndTime);
+                        currentBuilder.Clear();
+                        currentBuilder.Append(next.Text);
+                    }
                 }
                 else
                 {
-                    // Case 3: Different Actor OR Huge Gap -> STOP MERGING
+                    if (isSameActor && gap <= 2)
+                    {
+                        currentBuilder.Append(" " + next.Text);
+                        currentEnd = TimeSpan.Parse(next.EndTime);
+                    }
+                    else if (isSameActor && gap > 2 && gap <= 10)
+                    {
+                        currentBuilder.Append($" // {nextStart:h\\:mm\\:ss} " + next.Text);
+                        currentEnd = TimeSpan.Parse(next.EndTime);
+                    }
+                    else
+                    {
+                        result.Add(CreateLine(currentStart, currentEnd, currentActor, currentBuilder.ToString()));
+                        currentStart = nextStart;
+                        currentEnd = TimeSpan.Parse(next.EndTime);
+                        currentActor = next.Actor;
 
-                    // A. Save the accumulated buffer to the list
-                    result.Add(CreateLine(currentStart, currentEnd, currentActor, currentBuilder.ToString()));
-
-                    // B. Reset buffers to start a NEW line with the current item
-                    currentStart = nextStart;
-                    currentEnd = TimeSpan.Parse(next.EndTime);
-                    currentActor = next.Actor;
-
-                    currentBuilder.Clear();
-                    currentBuilder.Append(next.Text);
+                        currentBuilder.Clear();
+                        currentBuilder.Append(next.Text);
+                    }
                 }
             }
 
@@ -82,6 +106,6 @@ namespace DL_Turbo_Free.Helper
                 Actor = actor,
                 Text = text
             };
-        }      
+        }
     }
 }

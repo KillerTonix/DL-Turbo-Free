@@ -1,5 +1,7 @@
-﻿using System.Reflection;
+﻿using System.Diagnostics;
+using System.Reflection;
 using System.Windows;
+using System.Windows.Navigation;
 
 namespace DL_Turbo_Free
 {
@@ -21,7 +23,13 @@ namespace DL_Turbo_Free
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             string? version = Assembly.GetExecutingAssembly().GetName().Version?.ToString();
-            AppNameLabel.Content = $"DL Turbo Free ver: {version}";
+            AppNameLabel.Content = $"DL Turbo Free v:{version}";
+        }
+
+        private void Hyperlink_RequestNavigate(object sender, System.Windows.Navigation.RequestNavigateEventArgs e)
+        {
+            Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri) { UseShellExecute = true });
+            e.Handled = true;
         }
     }
 }

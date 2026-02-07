@@ -4,24 +4,65 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:DL_Turbo_Free"
-        mc:Ignorable="d" Background="#FF2E2E2E"
+        mc:Ignorable="d" 
+        Background="#1E1E1E"
         WindowStartupLocation="CenterScreen"
-        Title="Set Separator" Height="190" Width="300"
-        WindowStyle="ToolWindow" ResizeMode="NoResize" Loaded="Window_Loaded">
-    <Window.Resources>
-        <Style x:Key="TerminalBtn" TargetType="Button">
-            <Setter Property="Padding" Value="10,5"/>
+        Title="Actor Separator" Width="350"
+        SizeToContent="Height" ResizeMode="NoResize" Loaded="Window_Loaded">
 
-            <Setter Property="Background" Value="#444"/>
+    <Window.Resources>
+        <Style x:Key="ModernBtn" TargetType="Button">
+            <Setter Property="Background" Value="#3E3E42"/>
             <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Padding" Value="10,5"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="4">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="true">
+                                <Setter Property="Background" TargetName="border" Value="#505050"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="PrimaryBtn" TargetType="Button" BasedOn="{StaticResource ModernBtn}">
+            <Setter Property="Background" Value="#007ACC"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#0097FB"/>
+                </Trigger>
+            </Style.Triggers>
         </Style>
     </Window.Resources>
 
-    <Grid>
-        <StackPanel Margin="10" Orientation="Vertical">
-            <TextBlock Text="Set Separator Options" FontSize="20" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
-            <TextBlock Text="Separator type:" Margin="10" Foreground="White"/>
-            <ComboBox x:Name="SeparatorTypeComboBox" Margin="10,0,10,10" Foreground="Black">
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Margin="0,0,0,15">
+            <Label Content="Separator Format" FontSize="16" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Padding="0"/>
+            <TextBlock Text="How are actors defined in your text?" Foreground="#888" FontSize="12" HorizontalAlignment="Center" Margin="0,5,0,0"/>
+        </StackPanel>
+
+        <StackPanel Grid.Row="1">
+            <Label Content="Select Pattern:" Foreground="#CCCCCC" FontSize="12" Margin="0,0,0,5"/>
+            <ComboBox x:Name="SeparatorTypeComboBox" Height="30" 
+                      Padding="10,0" VerticalContentAlignment="Center"
+                      SelectionChanged="SeparatorTypeComboBox_SelectionChanged">
                 <ComboBoxItem Content="[actor]"/>
                 <ComboBoxItem Content="actor\"/>
                 <ComboBoxItem Content="actor)"/>
@@ -29,9 +70,48 @@
                 <ComboBoxItem Content="actor/"/>
                 <ComboBoxItem Content="actor+"/>
                 <ComboBoxItem Content="actor:"/>
+                <ComboBoxItem Content="Custom"/>
             </ComboBox>
         </StackPanel>
-        <Button x:Name="ApplyButton" Style="{StaticResource TerminalBtn}" Content="Apply" Width="100" Height="30" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,10" Click="ApplyButton_Click"/>
 
+        <StackPanel x:Name="CustomSeparatorSP" Grid.Row="2" Visibility="Collapsed" Margin="0,15,0,0">
+            <Label Content="Custom Pattern:" Foreground="#CCCCCC" FontSize="12" Margin="0,0,0,5"/>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBox x:Name="CustomSeparatorTextBox" Grid.Column="0" Height="30"
+                         Background="#252526" Foreground="White" BorderBrush="#3F3F46"
+                         VerticalContentAlignment="Center" Padding="5,0"
+                         Text="Enter custom separator here..." 
+                         TextChanged="CustomSeparatorTextBox_TextChanged"
+                         PreviewMouseLeftButtonDown="CustomSeparatorTextBox_PreviewMouseLeftButtonDown"/>
+
+                <Button x:Name="HintBtn" Grid.Column="1" Content="?" 
+                        Width="30" Height="30" Margin="5,0,0,0"
+                        Style="{StaticResource ModernBtn}"
+                        Click="HintBtn_Click" ToolTip="Help"/>
+            </Grid>
+        </StackPanel>
+
+        <Border Grid.Row="3" Background="#252526" BorderBrush="#3F3F46" BorderThickness="1" CornerRadius="4" Margin="0,15,0,20" Padding="10">
+            <StackPanel>
+                <Label Content="PREVIEW RESULT" FontSize="9" FontWeight="Bold" Foreground="#666" Margin="0,0,0,2"/>
+                <TextBlock x:Name="PreviewTextBlock" 
+                           Text="John Doe: Hello World" 
+                           FontFamily="Consolas, Courier New, Monospace"
+                           Foreground="#4EC9B0" 
+                           FontSize="13"
+                           TextWrapping="Wrap"/>
+            </StackPanel>
+        </Border>
+
+        <Button x:Name="ApplyButton" Grid.Row="4" 
+                Style="{StaticResource PrimaryBtn}" 
+                Content="Apply Settings" 
+                Height="35" 
+                Click="ApplyButton_Click"/>
     </Grid>
 </Window>

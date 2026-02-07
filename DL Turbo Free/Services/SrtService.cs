@@ -1,4 +1,5 @@
 ﻿using DL_Turbo_Free.Contexts;
+using DL_Turbo_Free.Helper;
 using DL_Turbo_Free.Models;
 using System.IO;
 using System.Text.Encodings.Web;
@@ -15,11 +16,7 @@ namespace DL_Turbo_Free.Services
         [GeneratedRegex(@"(\d{2}:\d{2}:\d{2}[,\.]\d{3})")]
         private static partial Regex RxTiming();
 
-        [GeneratedRegex(@"\[(?<actor>.*?)\]|\((?<actor>.*?)\)|(?<actor>[^\s]+)[\\/+\)]")]
-        private static partial Regex RxBracketActor();
-
-        [GeneratedRegex(@"^(?<actor>.+?):\s+(?<text>.*)$")]
-        private static partial Regex RxColonActor();
+        readonly Regex RxBracketActor = CustomRegex.CreateCustomActorRegex(GlobalSettings.Default.SelectedSeparatorType);
 
         /// <summary>
         /// Parses SRT file and returns raw UTF-8 JSON bytes (ideal for memory storage/transmission).
@@ -62,24 +59,15 @@ namespace DL_Turbo_Free.Services
                     string currentActor = "Undefined"; // Default
                     string currentText = line.Trim();
 
-                    // CHECK STRATEGY A: "Name: Text"
-                    var colonMatch = RxColonActor().Match(line);
-                    if (colonMatch.Success)
+
+                    var bracketMatch = RxBracketActor.Match(line);
+                    if (bracketMatch.Success)
                     {
-                        currentActor = CleanActorName(colonMatch.Groups["actor"].Value.Trim());
-                        currentText = colonMatch.Groups["text"].Value.Trim();
+                        currentActor = CleanActorName(bracketMatch.Groups["actor"].Value.Trim());
+                        // Remove the [Name] tag from text
+                        currentText = RxBracketActor.Replace(line, "").Trim();
                     }
-                    // CHECK STRATEGY B: "[Name] Text" (Fallback)
-                    else
-                    {
-                        var bracketMatch = RxBracketActor().Match(line);
-                        if (bracketMatch.Success)
-                        {
-                            currentActor = CleanActorName(bracketMatch.Groups["actor"].Value.Trim());
-                            // Remove the [Name] tag from text
-                            currentText = RxBracketActor().Replace(line, "").Trim();
-                        }
-                    }
+
 
                     // Add the item
                     // Note: We create a NEW item for every line found in the block
@@ -126,6 +114,9 @@ namespace DL_Turbo_Free.Services
                 .Replace("/", "")
                 .Replace("\\", "") // Backslash
                 .Replace("+", "")
+                .Replace("*", "")
+                .Replace("-", "")
+                .Replace(":", "")
                 .Trim();
 
             return string.IsNullOrWhiteSpace(cleaned) ? "Undefined" : cleaned;

@@ -4,44 +4,125 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:DL_Turbo_Free"
-        mc:Ignorable="d" Background="#FF2E2E2E"
+        mc:Ignorable="d" 
+        Background="#1E1E1E"
         WindowStartupLocation="CenterScreen"
-        Title="About" Height="320" Width="800"
-        WindowStyle="ToolWindow" ResizeMode="NoResize" Loaded="Window_Loaded">
-    <Window.Resources>
-        <Style x:Key="TerminalBtn" TargetType="Button">
-            <Setter Property="Padding" Value="10,5"/>
+        Title="About DL Turbo Free" Height="450" Width="500"
+        ResizeMode="NoResize" Loaded="Window_Loaded">
 
-            <Setter Property="Background" Value="#444"/>
+    <Window.Resources>
+        <Style x:Key="ModernBtn" TargetType="Button">
+            <Setter Property="Background" Value="#3E3E42"/>
             <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Padding" Value="15,5"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="4">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="true">
+                                <Setter Property="Background" TargetName="border" Value="#505050"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="true">
+                                <Setter Property="Background" TargetName="border" Value="#007ACC"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="CopyableTextBox" TargetType="RichTextBox">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#007ACC"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="IsReadOnly" Value="True"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+
+        <Style x:Key="FieldLabel" TargetType="Label">
+            <Setter Property="Foreground" Value="#AAAAAA"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="HorizontalAlignment" Value="Right"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
         </Style>
     </Window.Resources>
-    <StackPanel>
-        <Label x:Name="AppNameLabel" Content="DL Turbo Free" FontSize="24" FontWeight="Bold" Foreground="White" HorizontalContentAlignment="Center" Margin="0,10,0,0"/>
-        <TextBlock Text="DL Turbo Free is a powerful tool for converting your subtitles." Margin="10,10,10,0" FontSize="14" Foreground="White"/>
-        <TextBlock Text="This application supports '.ass' and '.srt' input formats and converts into '.ass', '.srt' and make dialog list '.docx'." Margin="10,0,10,0" FontSize="14" Foreground="White"/>
-        <TextBlock Text="Developed by Artur Tonoyan. For more information, contact me." TextWrapping="Wrap" Margin="10" FontSize="14" Foreground="White"/>
-        <StackPanel Orientation="Vertical">
-            
-            <StackPanel Orientation="Horizontal" Margin="10,5,10,0">
-                <Label Content="Email:" FontSize="12" Foreground="White" Padding="0,0,0,0"/>
-                <TextBox Text="artur.tonoyan2012@yandex.ru" FontSize="12" Foreground="White" Background="#444" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="50,0,0,0"/>
-            </StackPanel>
-            <StackPanel Orientation="Horizontal" Margin="10,5,10,0">
-                <Label Content="Vkontatke:"  FontSize="12" Foreground="White" Padding="0,0,0,0"/>
-                <TextBox Text="https://vk.com/aatonoyan"  FontSize="12" Foreground="White" Background="#444" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="48,0,0,0"/>
-            </StackPanel>
-            <StackPanel Orientation="Horizontal" Margin="10,5,10,0">
-                <Label Content="Discord:"  FontSize="12" Foreground="White" Padding="0,0,0,0"/>
-                <TextBox Text="arturtonoyan"  FontSize="12" Foreground="White" Background="#444" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="129,0,0,0"/>
-            </StackPanel>
-            <StackPanel Orientation="Horizontal" Margin="10,5,10,10">
-                <Label Content="Telegram:"  FontSize="12" Foreground="White" Padding="0,0,0,0"/>
-                <TextBox Text="@BioWareZ"  FontSize="12" Foreground="White" Background="#444" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="127,0,0,0"/>
-            </StackPanel>
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" HorizontalAlignment="Center" Margin="0,0,0,15">
+            <Label x:Name="AppNameLabel" Content="DL TURBO FREE" FontSize="26" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Padding="0"/>
+            <Label Content="Subtitle Conversion Tool" FontSize="14" Foreground="#888" HorizontalAlignment="Center" Padding="0" Margin="0,5,0,0"/>
         </StackPanel>
 
-        <Button x:Name="CloseButton" Style="{StaticResource TerminalBtn}" Content="Close" Width="100" Height="30" HorizontalAlignment="Center" VerticalAlignment="Bottom" Click="CloseButton_Click" Margin="0,0,0,20"/>
+        <TextBlock Grid.Row="1" TextWrapping="Wrap" TextAlignment="Center" Foreground="#CCCCCC" FontSize="14" LineHeight="20">
+            A powerful utility to convert subtitles between <Run Foreground="White" FontWeight="Bold">.ass</Run> and <Run Foreground="White" FontWeight="Bold">.srt</Run> formats, 
+            and generate comprehensive Dialog Lists in <Run Foreground="White" FontWeight="Bold">.docx</Run>.
+        </TextBlock>
 
-    </StackPanel>
+        <Border Grid.Row="2" Background="#333" Height="1" Margin="10,20,10,20"/>
+
+        <StackPanel Grid.Row="3">
+            <Label Content="Developed by Artur Tonoyan" Foreground="White" HorizontalAlignment="Center" FontWeight="Bold" Margin="0,0,0,15"/>
+
+            <Grid HorizontalAlignment="Center" Width="380">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="30"/>
+                    <RowDefinition Height="30"/>
+                    <RowDefinition Height="30"/>
+                    <RowDefinition Height="30"/>
+                </Grid.RowDefinitions>
+
+                <Label Grid.Row="0" Grid.Column="0" Content="GitHub:" Style="{StaticResource FieldLabel}"/>
+                <TextBlock Grid.Row="0" Grid.Column="1" VerticalAlignment="Center" Margin="10,0,0,0" FontSize="13">
+                    <Hyperlink NavigateUri="https://github.com/KillerTonix" RequestNavigate="Hyperlink_RequestNavigate" Foreground="#007ACC">
+                        KillerTonix
+                    </Hyperlink>                
+                </TextBlock>
+
+                <Label Grid.Row="1" Grid.Column="0" Content="Vkontakte:" Style="{StaticResource FieldLabel}"/>
+                <TextBlock Grid.Row="1" Grid.Column="1" VerticalAlignment="Center" Margin="10,0,0,0" FontSize="13">
+                    <Hyperlink NavigateUri="https://vk.com/aatonoyan" RequestNavigate="Hyperlink_RequestNavigate" Foreground="#007ACC">
+                        aatonoyan
+                    </Hyperlink>    
+                </TextBlock>
+
+                <Label Grid.Row="2" Grid.Column="0" Content="Discord:" Style="{StaticResource FieldLabel}"/>
+                <TextBlock Grid.Row="2" Grid.Column="1" VerticalAlignment="Center" Margin="10,0,0,0" FontSize="13">
+                    <Hyperlink NavigateUri="https://discord.com/users/arturtonoyan" RequestNavigate="Hyperlink_RequestNavigate" Foreground="#007ACC">
+                        arturtonoyan
+                    </Hyperlink>        
+                </TextBlock>
+
+                <Label Grid.Row="3" Grid.Column="0" Content="Telegram:" Style="{StaticResource FieldLabel}"/>
+                <TextBlock Grid.Row="3" Grid.Column="1" VerticalAlignment="Center" Margin="10,0,0,0" FontSize="13">
+                    <Hyperlink NavigateUri="https://t.me/BioWareZ" RequestNavigate="Hyperlink_RequestNavigate" Foreground="#007ACC">
+                        @BioWareZ
+                    </Hyperlink>        
+                </TextBlock>
+            </Grid>
+        </StackPanel>
+
+        <Button x:Name="CloseButton" Grid.Row="4" Style="{StaticResource ModernBtn}" 
+                Content="Close" Width="100" Height="35" 
+                HorizontalAlignment="Center" VerticalAlignment="Bottom" 
+                Click="CloseButton_Click"/>
+    </Grid>
 </Window>
