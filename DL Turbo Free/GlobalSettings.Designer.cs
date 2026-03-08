@@ -154,5 +154,29 @@ namespace DL_Turbo_Free {
                 this["DocxTimingFormatValue"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int DocxFontIndex {
+            get {
+                return ((int)(this["DocxFontIndex"]));
+            }
+            set {
+                this["DocxFontIndex"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Arial")]
+        public string DocxFontValue {
+            get {
+                return ((string)(this["DocxFontValue"]));
+            }
+            set {
+                this["DocxFontValue"] = value;
+            }
+        }
     }
 }

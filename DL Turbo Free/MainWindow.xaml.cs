@@ -66,11 +66,12 @@ namespace DL_Turbo_Free
 
         private void DoUIChanges(string file)
         {
-            
+
             string? version = Assembly.GetExecutingAssembly().GetName().Version?.ToString();
 
             bool openFolderAfterConversion = GlobalSettings.Default.OpenTheFolderAfterConvertion;
             bool closeAppAfterConversion = GlobalSettings.Default.CloseTheAppAfterConvertion;
+            int fontIndex = GlobalSettings.Default.DocxFontIndex;
             int fontSizeIndex = GlobalSettings.Default.DocxFontSizeIndex;
             int tableStyleIndex = GlobalSettings.Default.DocxTableStyleIndex;
             int timingFormatIndex = GlobalSettings.Default.DocxTimingFormatIndex;
@@ -78,6 +79,7 @@ namespace DL_Turbo_Free
 
             OpenTheFolderAfterConvertionChkBox.IsChecked = openFolderAfterConversion;
             CloseTheAppAfterConvertionChkBox.IsChecked = closeAppAfterConversion;
+            FontComboBox.SelectedIndex = fontIndex;
             FontSizeComboBox.SelectedIndex = fontSizeIndex;
             TableStyleComboBox.SelectedIndex = tableStyleIndex;
             TimingFormatComboBox.SelectedIndex = timingFormatIndex;
@@ -291,8 +293,8 @@ namespace DL_Turbo_Free
             GlobalSettings.Default.DocxFontSizeIndex = cmb.SelectedIndex;
             if (cmb.SelectedItem is ComboBoxItem selectedItem)
             {
-                if (int.TryParse(selectedItem.Content.ToString(), out int size))                
-                    GlobalSettings.Default.DocxFontSizeValue = size;                
+                if (int.TryParse(selectedItem.Content.ToString(), out int size))
+                    GlobalSettings.Default.DocxFontSizeValue = size;
             }
             GlobalSettings.Default.Save();
         }
@@ -321,5 +323,15 @@ namespace DL_Turbo_Free
             GlobalSettings.Default.Save();
         }
 
+        private void FontComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            ComboBox cmb = (ComboBox)sender;
+            GlobalSettings.Default.DocxFontIndex = cmb.SelectedIndex;
+            if (cmb.SelectedItem is ComboBoxItem selectedItem)
+            {
+                GlobalSettings.Default.DocxFontValue = selectedItem.Content.ToString();
+            }
+            GlobalSettings.Default.Save();
+        }
     }
 }

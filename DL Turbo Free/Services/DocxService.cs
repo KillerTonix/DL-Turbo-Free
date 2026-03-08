@@ -17,6 +17,7 @@ namespace DL_Turbo_Free.Services
             try
             {
                 TableDesign tableDesign = DocxStyleHelper.GetTableDesign();   
+                string fontName = DocxStyleHelper.GetFontName();
                 int fontSize = DocxStyleHelper.GetFontSize();
 
                 string filename = Path.GetFileNameWithoutExtension(outputPath);
@@ -26,16 +27,16 @@ namespace DL_Turbo_Free.Services
                 using var doc = File.Exists(templatePath) ? DocX.Load(templatePath) : DocX.Create(outputPath);
 
                 // 3. Add Title
-                doc.InsertParagraph(filename).FontSize(16).Bold().Alignment = Alignment.center;
+                doc.InsertParagraph(filename).FontSize(16).Bold().Font(fontName).Alignment = Alignment.center;
 
                 // 4. Add Actor Header (List of unique actors)
                 var uniqueActors = lines.Select(x => x.Actor).Distinct().OrderBy(x => x).ToList();
-                var pActors = doc.InsertParagraph("Актёры: ");
+                var pActors = doc.InsertParagraph("Актёры: ").Font(fontName);
 
                 foreach (var actor in uniqueActors)
                 {
-                    pActors.Append(actor);
-                    pActors.Append(", ");
+                    pActors.Append(actor).Font(fontName);
+                    pActors.Append(", ").Font(fontName);
                 }
                 pActors.Append("\n");
 
@@ -48,16 +49,16 @@ namespace DL_Turbo_Free.Services
                 table.AutoFit = AutoFit.Contents;
 
                 // Add headers to the table
-                table.Rows[0].Cells[0].Paragraphs.First().Append("Время").Bold().FontSize(12).Alignment = Alignment.center;
-                table.Rows[0].Cells[1].Paragraphs.First().Append("Актер").Bold().FontSize(12).Alignment = Alignment.center;
-                table.Rows[0].Cells[2].Paragraphs.First().Append("Текст").Bold().FontSize(12).Alignment = Alignment.center;
+                table.Rows[0].Cells[0].Paragraphs.First().Append("Время").Bold().FontSize(12).Font(fontName).Alignment = Alignment.center;
+                table.Rows[0].Cells[1].Paragraphs.First().Append("Актер").Bold().FontSize(12).Font(fontName).Alignment = Alignment.center;
+                table.Rows[0].Cells[2].Paragraphs.First().Append("Текст").Bold().FontSize(12).Font(fontName).Alignment = Alignment.center;
 
                 for (int i = 0; i < lines.Count; i++)
                 {
                     var line = lines[i];
-                    table.Rows[i + 1].Cells[0].Paragraphs.First().Append(DocxStyleHelper.GetTimingFormat(line.Timestamp));
-                    table.Rows[i + 1].Cells[1].Paragraphs.First().Append(line.Actor).FontSize(12).Bold().Alignment = Alignment.right;
-                    table.Rows[i + 1].Cells[2].Paragraphs.First().Append(line.Text).FontSize(fontSize);
+                    table.Rows[i + 1].Cells[0].Paragraphs.First().Append(DocxStyleHelper.GetTimingFormat(line.Timestamp)).Font(fontName);
+                    table.Rows[i + 1].Cells[1].Paragraphs.First().Append(line.Actor).FontSize(12).Bold().Font(fontName).Alignment = Alignment.right;
+                    table.Rows[i + 1].Cells[2].Paragraphs.First().Append(line.Text).FontSize(fontSize).Font(fontName);
                 }
 
                 doc.InsertTable(table);
@@ -77,7 +78,8 @@ namespace DL_Turbo_Free.Services
         {
             try
             {
-                doc.InsertParagraph("\n\nСТАТИСТИКА ПО КОЛИЧЕСТВУ РЕПЛИК\n").FontSize(16).Bold().UnderlineStyle(UnderlineStyle.singleLine).Alignment = Alignment.center;
+                string fontName = DocxStyleHelper.GetFontName();
+                doc.InsertParagraph("\n\nСТАТИСТИКА ПО КОЛИЧЕСТВУ РЕПЛИК\n").FontSize(16).Bold().Font(fontName).UnderlineStyle(UnderlineStyle.singleLine).Alignment = Alignment.center;
 
                 var stats = lines.Where(x => !string.IsNullOrWhiteSpace(x.Actor)) // Filter empty actors
                                  .GroupBy(x => x.Actor.Trim())
@@ -91,8 +93,8 @@ namespace DL_Turbo_Free.Services
                 table.AutoFit = AutoFit.Contents;
 
                 // Header row (Row 0)
-                table.Rows[0].Cells[0].Paragraphs.First().Append("Актёр").FontSize(14).Bold().Alignment = Alignment.center;
-                table.Rows[0].Cells[1].Paragraphs.First().Append("Количество реплик").FontSize(14).Bold().Alignment = Alignment.center;
+                table.Rows[0].Cells[0].Paragraphs.First().Append("Актёр").FontSize(14).Bold().Font(fontName).Alignment = Alignment.center;
+                table.Rows[0].Cells[1].Paragraphs.First().Append("Количество реплик").FontSize(14).Bold().Font(fontName).Alignment = Alignment.center;
 
                 // Data rows
                 for (int i = 0; i < stats.Count; i++)
@@ -100,11 +102,11 @@ namespace DL_Turbo_Free.Services
                     var row = table.Rows[i + 1];
 
                     // Actor Name column
-                    row.Cells[0].Paragraphs.First().Append(stats[i].Actor);
+                    row.Cells[0].Paragraphs.First().Append(stats[i].Actor).Font(fontName);
                     row.Cells[0].SetBorder(TableCellBorderType.Bottom, _blankBorder);
 
                     // Count column
-                    row.Cells[1].Paragraphs.First().Append(stats[i].Count.ToString()).Alignment = Alignment.center;
+                    row.Cells[1].Paragraphs.First().Append(stats[i].Count.ToString()).Font(fontName).Alignment = Alignment.center;
                     row.Cells[1].SetBorder(TableCellBorderType.Bottom, _blankBorder);
                 }
 
@@ -120,6 +122,8 @@ namespace DL_Turbo_Free.Services
         {
             try
             {
+                string fontName = DocxStyleHelper.GetFontName();
+
                 // 1. CRITICAL: Create the footer containers in the XML
                 doc.AddFooters();
 
@@ -134,7 +138,7 @@ namespace DL_Turbo_Free.Services
                     if (f == null) return;
 
                     f.InsertParagraph($"\"{filename}\"\n").Bold()
-                     .Append("Страница ").AppendPageNumber(PageNumberFormat.normal).Append(" из ").AppendPageCount(PageNumberFormat.normal).Alignment = Alignment.center;
+                     .Append("Страница ").AppendPageNumber(PageNumberFormat.normal).Append(" из ").AppendPageCount(PageNumberFormat.normal).Font(fontName).Alignment = Alignment.center;
                 }
 
                 // 4. Now these properties are guaranteed to be initialized (or we skip them safely)

@@ -16,10 +16,16 @@ namespace DL_Turbo_Free.Helper
             };
         }
 
+        public static string GetFontName()
+        {
+            return GlobalSettings.Default.DocxFontValue;
+        }
+
         public static int GetFontSize()
         {
             return GlobalSettings.Default.DocxFontSizeValue;
         }
+
 
 
         public static string GetTimingFormat(string time)
