@@ -1,48 +1,40 @@
-# DL Turbo Free
+# DL-Turbo-Free ⚡️
 
-A high-performance WPF application built with **.NET 10** that converts subtitle files (`.srt`, `.ass`) into formatted Word documents (`.docx`) for dubbing and video production workflows.
+DL-Turbo-Free is a high-performance WPF application designed to streamline dubbing and video production workflows. It seamlessly converts subtitle files (`.srt`, `.ass`) into beautifully formatted Word documents (`.docx`), optimizing script management for voice actors and directors.
 
-## 🚀 Features
+## ✨ Key Features
 
-### Core Functionality
-* **Multi-Format Support:** fast parsing of SubRip (`.srt`) and Advanced Substation Alpha (`.ass`) files.
-* **Smart Script Merging:** Automatically merges subtitle lines based on time gaps (e.g., gaps < 2s are merged into one line) to create readable dubbing scripts.
-* **Word Export:** Generates professional `.docx` tables with columns for Time, Actor, and Text.
-* **Actor Management:**
-    * Parses multiple actor formats: `[Name] Text`, `Name: Text`, `Name/`, `(Name)`.
-    * **Auto-fill Undefined:** Automatically propagates actor names to subsequent lines if they are undefined.
-    * **Highlighting:** specific actors can be highlighted in the output document with custom colors (Cyan, Green, Yellow, etc.).
-* **Statistics:** Generates a summary table at the end of the document counting lines per actor.
+* **Multi-Format Support:** Easily import and parse standard `.srt` and `.ass` subtitle files.
+* **Modernized UI:** Navigate through a sleek, dark-themed interface with an intuitive card-based layout.
+* **Advanced Actor Management:** * Automatically parse and fill actor roles from multiple subtitle formats.
+    * **Custom Separators:** Define custom separators with runtime regex generation, complete with live preview and validation.
+* **Smart Script Merging & Export:** Generate ready-to-print `.docx` scripts with built-in statistics, row alignment, and syntax highlighting.
+* **Actor Splitter:** Isolate and export individual `.srt` files per actor for granular control during the dubbing process.
 
-### Tools
-* **Actor Splitter:** Export separate `.srt` files for each actor (useful for individual voice actor recording sessions).
-* **Memory Optimization:** Uses .NET 10 Source Generators and UTF-8 byte arrays for low-memory JSON processing.
+## 🚀 Recent Updates & Under-the-Hood Improvements
+
+* **Asynchronous Processing:** Conversion operations are now fully asynchronous, keeping the UI highly responsive during heavy script processing.
+* **Performance Boosts:** Implemented aggressive Regex caching for significantly faster subtitle parsing.
+* **Enhanced Stability:** Fixed UI-related bugs (such as `InvalidCastException` in dropdown selections) and resolved row index mismatches in the DocX statistics table.
 
 ## 🛠️ Tech Stack
 
-* **Framework:** .NET 10 (C# 14) / WPF
-* **Architecture:** Modern Service-based architecture with `record` types and immutable data models.
-* **Parsing:** Regex Source Generators (`[GeneratedRegex]`) for high-performance text extraction.
-* **Serialization:** `System.Text.Json` with Source Generators (`JsonSerializerContext`).
-* **Word Generation:** [Xceed DocX](https://github.com/xceedsoftware/DocX) library (Fluent API).
+* **.NET 10** (WPF)
+* **Regex Source Generators** (for high-performance text parsing)
+* **System.Text.Json**
+* **Xceed DocX** (for robust Word document generation)
 
-## 📦 Installation
+## 📦 Installation & Usage
 
-1.  Ensure you have the **.NET 10 Runtime** installed.
-2.  Download the latest release from the [Releases Page](#).
-3.  Run `SrtToDocx.exe`.
+1. Clone the repository: `git clone https://github.com/KillerTonix/DL-Turbo-Free.git`
+2. Open the solution in Visual Studio.
+3. Build and run the project (Requires .NET 10 SDK).
+4. Load your `.srt` or `.ass` files, configure your actor separators, and export your `.docx` script!
 
-## 📖 Usage
+## Screnshot
+<img width="797" height="642" alt="image" src="https://github.com/user-attachments/assets/733cdd56-ca14-423b-8070-932ed6c6ced4" />
 
-1.  **Import:** Click to load an `.srt` or `.ass` file.
-2.  **Settings:**
-    * Select the **Highlight Actor** from the dropdown.
-    * Choose a **Highlight Color**.
-3.  **Export:**
-    * **To Docx:** Generates the script table.
-    * **To Separate Srt:** Creates a folder with individual subtitle files for every actor found.
 
-## 📄 License
-Distributed under the MIT License. See `LICENSE` for more information.
+## 🤝 Contributing
 
-![DL Turbo Free](https://github.com/user-attachments/assets/09b9c8c2-04f6-41fe-91d1-70014e3ba73c)
+Contributions, issues, and feature requests are welcome! Feel free to check the [issues page](https://github.com/KillerTonix/DL-Turbo-Free/issues).
